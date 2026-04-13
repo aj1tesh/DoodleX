@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useOrganizationList, useOrganization } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
+import { Hint } from "@/components/hint";
 
 interface SidebarItemProps {
     id: string;
@@ -22,13 +23,21 @@ export const SidebarItem = ({ id, name, imageUrl }: SidebarItemProps) => {
 
     return (
         <div className="aspect-square relative">
-            <Image
-                src={imageUrl}
-                alt={name}
-                onClick={onClick}
-                fill
-                className={cn("cursor-pointer opacity-75 hover:opacity-100 transition", isActive && "opacity-100")}
-            />
+            <Hint 
+            label={name}
+            side="right"
+            align="center"
+            sideOffset={10}
+            alignOffset={10}
+            >
+                <Image
+                    src={imageUrl}
+                    alt={name}
+                    onClick={onClick}
+                    fill
+                    className={cn("cursor-pointer opacity-75 hover:opacity-100 transition", isActive && "opacity-100")}
+                />
+            </Hint>
         </div>
     )
 }
