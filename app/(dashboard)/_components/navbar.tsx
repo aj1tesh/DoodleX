@@ -3,6 +3,7 @@
 import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
 import { SearchInput } from "./search-input";
 
+
 export const Navbar = () => {
     return (
         <div className="h-16 border-b flex items-center px-4">
@@ -19,7 +20,7 @@ export const Navbar = () => {
                             justifyContent: "center",
                             alignItems: "center",
                             width: "100%",
-                            maxWidth: "367px",
+                            maxWidth: "376px",
                         },
                         organizationSwitcherTrigger: {
                             padding: "6px",
