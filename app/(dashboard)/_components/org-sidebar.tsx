@@ -18,6 +18,7 @@ export const OrgSidebar = () => {
 
     const searchParams = useSearchParams();
     void searchParams.get("favorite");
+    const favorite = searchParams.get("favorite") === "true";
     
     return (
         <div className="hidden lg:flex flex-col space-y-6 w-[206px] pl-5 pr-5 pt-5">
@@ -67,7 +68,7 @@ export const OrgSidebar = () => {
                 <Button 
                     asChild
                     size="lg"
-                    variant="ghost"
+                    variant={favorite ? "secondary" : "ghost"}
                     className="w-full justify-start">
                     <Link href={{
                         pathname: "/",
