@@ -1,8 +1,14 @@
 "use client";
 
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+
 import { EmptyBoards } from "../empty-boards";
 import { EmptyFavourites } from "../empty-favourites";
 import { EmptySearch } from "../empty-search";
+import { Loader2 } from "lucide-react";
+import { BoardCard } from "../board-card";
+import { NewBoardButton } from "../new-board-button";
 
 interface BoardListProps {
     orgId: string;
@@ -14,7 +20,17 @@ interface BoardListProps {
 
 export const BoardList = ({ orgId, query }: BoardListProps) => {
 
-    const data = []; // TODO: Change to API call
+    const data = useQuery(api.boards.get, {
+        orgId,
+    });
+
+    if(data===undefined) {
+        return (
+            <div className="flex items-center justify-center h-full">
+                <Loader2 className="w-4 h-4 animate-spin" />
+            </div>
+        )
+    }
 
     if(!data.length && query.search){
         return (
@@ -36,7 +52,25 @@ export const BoardList = ({ orgId, query }: BoardListProps) => {
 
     return (
         <div>
-            {JSON.stringify(query)}
+            <h2 className="text-2xl font-bold">
+                {query.favorite ? "Favorite Boards" : "All Boards"}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5 mt-8 pb-10">
+                <NewBoardButton orgId={orgId} disabled={false} />
+                {data.map((board) => (
+                    <BoardCard
+                        key={board._id}
+                        id={board._id}
+                        title={board.title}
+                        imageUrl={board.imageUrl}
+                        authorId={board.authorId}
+                        authorName={board.authorName}
+                        createdAt={board._creationTime}
+                        orgId={board.orgId}
+                        isFavorite={false}
+                    />
+                ))}
+            </div>
         </div>
     );
 }
