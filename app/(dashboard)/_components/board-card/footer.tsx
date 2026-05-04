@@ -12,11 +12,17 @@ interface FooterProps {
 };
 
 export const Footer = ({ title, authorLabel, createdAtLabel, isFavorite, onClick, disabled }: FooterProps) => {
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        e.stopPropagation();
+        e.preventDefault();
+        onClick();
+    }
+    
     return (
         <div className="relative p-3 bg-white">
             <p className="text-sm font-medium truncate max-w-[calc(100% - 20px)]">{title}</p>
             <p className="text-sm text-muted-foreground truncate max-w-[calc(100% - 20px)]">{authorLabel} • {createdAtLabel}</p>
-            <Button variant="ghost" size="icon" onClick={onClick} disabled={disabled}
+            <Button variant="ghost" size="icon" onClick={handleClick} disabled={disabled}
                 className={cn("absolute top-3 right-3", isFavorite && "text-yellow-400")}
             >
                 <StarIcon className={cn("size-3.5", isFavorite ? "fill-yellow-400 text-yellow-400" : "fill-none")} />
