@@ -6,7 +6,6 @@ import { api } from "@/convex/_generated/api";
 import { EmptyBoards } from "../empty-boards";
 import { EmptyFavourites } from "../empty-favourites";
 import { EmptySearch } from "../empty-search";
-import { Loader2 } from "lucide-react";
 import { BoardCard } from "../board-card";
 import { NewBoardButton } from "../new-board-button";
 
@@ -22,6 +21,8 @@ export const BoardList = ({ orgId, query }: BoardListProps) => {
 
     const data = useQuery(api.boards.get, {
         orgId,
+        search: query.search,
+        favorites: query.favorite,
     });
 
     if(data===undefined) {
