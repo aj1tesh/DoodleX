@@ -2,6 +2,7 @@ import { Canvas } from "./_components/canvas";
 import { Room } from "@/components/room";
 import { notFound } from "next/navigation";
 import { Loading } from "./_components/loading";
+import { useSelf } from "@liveblocks/react";
 
 interface BoardIdPageProps {
     params: Promise<{
