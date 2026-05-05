@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@source "../**/*.{js,jsx,ts,tsx,mdx}";
+
 html, body, :root {
   height: 100%;
 }
