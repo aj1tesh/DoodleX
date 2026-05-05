@@ -1,14 +1,27 @@
 import { Canvas } from "./_components/canvas";
+import { Room } from "@/components/room";
+import { notFound } from "next/navigation";
+import { Loading } from "./_components/loading";
 
 interface BoardIdPageProps {
-    params: {
+    params: Promise<{
         boardId: string;
-    };
+    }>;
 }
 
-const BoardIdPage = ({ params }: BoardIdPageProps) => {
+const BoardIdPage = async ({ params }: BoardIdPageProps) => {
+    //return <Loading />;
+
+    const { boardId } = await params;
+
+    if (!boardId) {
+        notFound();
+    }
+
     return (
-        <Canvas boardId={params.boardId} />
+        <Room roomId={boardId} fallback={<Loading />}>
+            <Canvas boardId={boardId} />
+        </Room>
     );
 };
 

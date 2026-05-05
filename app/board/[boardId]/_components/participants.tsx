@@ -5,3 +5,9 @@ export const Participants = () => {
         </div>
     );
 };
+
+Participants.Skeleton = function ParticipantsSkeleton() {
+    return (
+        <div className="absolute rounded-md top-2 right-2 bg-white p-3 h-12 flex items-center shadow-md w-[100px]" />
+    );
+};
