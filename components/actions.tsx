@@ -26,7 +26,7 @@ interface ActionsProps {
 }
 
 export const Actions = ({ children, side, sideOffset, id, title }: ActionsProps) => {
-    const { anOpen } = useRenameModal();
+    const { onOpen } = useRenameModal();
     const { mutate, pending } = useApiMutation(api.board.remove);
 
     const onCopyLink = () => {
@@ -46,17 +46,21 @@ export const Actions = ({ children, side, sideOffset, id, title }: ActionsProps)
     };
     
     return (
-        <div className="absolute top-1 right-1 z-10">
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    {children}
-                </DropdownMenuTrigger>
-                <DropdownMenuContent side={side} sideOffset={sideOffset} className="w-60" onClick={(e) => e.stopPropagation()}>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                {children}
+            </DropdownMenuTrigger>
+                <DropdownMenuContent
+                    side={side}
+                    sideOffset={sideOffset}
+                    className="w-max"
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <DropdownMenuItem className="cursor-pointer p-3" onClick={onCopyLink}>
                         <Link2 className="size-4 mr-2" />
                         Copy Board Link
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer p-3" onClick={() => anOpen(id as Id<"boards">, title as string)}>
+                    <DropdownMenuItem className="cursor-pointer p-3" onClick={() => onOpen(id as Id<"boards">, title as string)}>
                         <Pencil className="size-4 mr-2" />
                         Rename
                     </DropdownMenuItem>
@@ -67,7 +71,6 @@ export const Actions = ({ children, side, sideOffset, id, title }: ActionsProps)
                         </Button>
                     </ConfirmModal>    
                 </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
+        </DropdownMenu>
     );
 };

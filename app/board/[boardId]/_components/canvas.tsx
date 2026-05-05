@@ -3,7 +3,7 @@
 import { Info } from "./info";
 import { Participants } from "./participants";
 import { Toolbar } from "./toolbar";
-import { useSelf } from "@liveblocks/react/suspense";
+import { Id } from "@/convex/_generated/dataModel";
 
 interface CanvasProps {
     boardId: string;
@@ -11,15 +11,11 @@ interface CanvasProps {
 
 export const Canvas = ({ boardId }: CanvasProps) => {
 
-    const info = useSelf((me) => me.info);
-
-    console.log(info);
-    
     return (
         <main
             className="h-full w-full relative bg-neutral-100 touch-none"
         >
-            <Info />
+            <Info boardId={boardId as Id<"boards">} />
             <Participants />
             <Toolbar />
         </main>
