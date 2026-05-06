@@ -1,6 +1,10 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { Camera } from "@/types/canvas";
+import { Camera, Colour } from "@/types/canvas";
+
+export function colourToCSS(colour: Colour): string {
+  return `rgb(${colour.r}, ${colour.g}, ${colour.b})`;
+}
 
 const COLORS = [
   "#3b82f6",
