@@ -16,8 +16,8 @@ export const Room = ({ children, roomId, fallback }: RoomProps) => {
     }
 
     return (
-        <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
-            <RoomProvider id={String(roomId)} initialPresence={{}}>
+        <LiveblocksProvider authEndpoint="/api/liveblocks-auth" throttle={16}>
+            <RoomProvider id={String(roomId)} initialPresence={{ cursor: null }}>
                 <ClientSideSuspense fallback={fallback}>
                     {children}
                 </ClientSideSuspense>
