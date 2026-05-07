@@ -6,14 +6,16 @@ import { Toolbar } from "./toolbar";
 import { Id } from "@/convex/_generated/dataModel";
 import { CanvasMode, CanvasState, Layer, LayerType } from "@/types/canvas";
 import { useCallback, useState } from "react";
-import { useHistory, useCanUndo, useCanRedo, useMutation, useStorage } from "@liveblocks/react";
+import { useHistory, useCanUndo, useCanRedo, useMutation, useStorage, useOthersMapped } from "@liveblocks/react/suspense";
 import { CursorPresence } from "./cursor-presence";
 import { Camera, Colour, Point } from "@/types/canvas";
 import { pointertoCanvas } from "@/lib/utils";
 import { nanoid } from "nanoid";
 import { LiveObject } from "@liveblocks/core";
 import { LayerPreview } from "@/app/board/[boardId]/_components/layer-preview";
-
+import { useMemo } from "react";
+import { getColor } from "@/lib/utils";
+import { SelectionBox } from "./selection-box";
 
 const MAX_LAYERS = 100;
 interface CanvasProps {
@@ -91,6 +93,36 @@ export const Canvas = ({ boardId }: CanvasProps) => {
         history.resume();
     }, [camera, canvasState, insertLayer, history]);
 
+    const selections = useOthersMapped((others) => others.presence.selection);
+
+    const onPointerDown = useMutation(({ self, setMyPresence }, e: React.PointerEvent, layerId: string) => {
+        if(canvasState.mode === CanvasMode.Pencil || canvasState.mode === CanvasMode.Inserting){
+            return;
+        }
+        history.pause();
+        e.stopPropagation();
+
+        const point = pointertoCanvas(e, camera);
+
+        if(!self.presence.selection?.includes(layerId)){
+            setMyPresence({ selection: [layerId] }, { addToHistory: true });
+        }
+        setCanvasState({ mode: CanvasMode.Translating, current: point });
+    },[camera, setCanvasState, history, canvasState.mode]);
+
+    const layerIdstoColor = useMemo(() => {
+        const layerIdstoColor: Record<string, string> = {};
+        
+        for(const user of selections){
+            const [connectionId, selection] = user;
+
+            for(const layerId of selection ?? []){
+                layerIdstoColor[layerId] = getColor(connectionId ?? 0);
+            }
+        }
+        return layerIdstoColor;
+    }, [selections]);
+
     return (
         <main
             className="h-full w-full relative bg-neutral-100 touch-none"
@@ -128,10 +160,12 @@ export const Canvas = ({ boardId }: CanvasProps) => {
                         <LayerPreview
                             key={layerId}
                             id={layerId}
-                            onLayerPointerDown={()=>{}}
-                            selectionColor={null}
+                            onLayerPointerDown={(e) => onPointerDown(e, layerId)}
+                            selectionColor={layerIdstoColor[layerId] ?? null}
                         />
                     ))}
+                    <SelectionBox
+                        onResizeHandlePointerDown={()=>{}}/>
                     <CursorPresence />
                 </g>
             </svg>

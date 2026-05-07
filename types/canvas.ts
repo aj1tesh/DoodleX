@@ -31,10 +31,10 @@ export type RectangleLayer = {
 
 export type EllipseLayer = {
     type: LayerType.Ellipse;
-    cx: number;
-    cy: number;
-    radiusX: number;
-    radiusY: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
     fill: Colour;
     value?: string;
 }

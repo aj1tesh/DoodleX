@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { MousePointer2Icon } from "lucide-react";
 import { getColor } from "@/lib/utils";
-import { useOther } from "@liveblocks/react";
+import { useOther } from "@liveblocks/react/suspense";
 
 
 interface CursorProps {

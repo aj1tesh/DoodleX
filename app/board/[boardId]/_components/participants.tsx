@@ -2,7 +2,7 @@
 
 import { getColor } from "@/lib/utils";
 import { UserAvatar } from "./user-avatar";
-import { useOthers, useSelf } from "@liveblocks/react";
+import { useOthers, useSelf } from "@liveblocks/react/suspense";
 
 const MAX_USERS = 3;
 

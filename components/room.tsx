@@ -1,8 +1,11 @@
 "use client";
 
 import { ReactNode } from "react";
-import { ClientSideSuspense } from "@liveblocks/react";
-import { LiveblocksProvider, RoomProvider } from "@liveblocks/react";
+import {
+    ClientSideSuspense,
+    LiveblocksProvider,
+    RoomProvider,
+} from "@liveblocks/react/suspense";
 import { LiveList, LiveMap, LiveObject } from "@liveblocks/core";
 import { Layer } from "@/types/canvas";
 

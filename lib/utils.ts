@@ -2,10 +2,6 @@ import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { Camera, Colour } from "@/types/canvas";
 
-export function colourToCSS(colour: Colour): string {
-  return `rgb(${colour.r}, ${colour.g}, ${colour.b})`;
-}
-
 const COLORS = [
   "#3b82f6",
   "#22c55e",
@@ -33,4 +29,10 @@ export function pointertoCanvas(
     x: Math.round(clientX - camera.position.x),
     y: Math.round(clientY - camera.position.y),
   };
+}
+
+export function colourToCSS(color: Colour): string {
+  return `#${color.r.toString(16).padStart(2, '0')}
+  ${color.g.toString(16).padStart(2, '0')}
+  ${color.b.toString(16).padStart(2, '0')}`;
 }
