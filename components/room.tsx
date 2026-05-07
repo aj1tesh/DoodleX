@@ -23,7 +23,7 @@ export const Room = ({ children, roomId, fallback }: RoomProps) => {
 
     return (
         <LiveblocksProvider authEndpoint="/api/liveblocks-auth" throttle={16}>
-            <RoomProvider id={String(roomId)} initialPresence={{ cursor: null, selection: [] }}
+            <RoomProvider id={String(roomId)} initialPresence={{ cursor: null, selection: [], pencilDraft: null, penColor: null }}
                 initialStorage={{ 
                     layers: new LiveMap<string, LiveObject<Layer>>(), 
                     layerIds: new LiveList([]) 

@@ -1,7 +1,7 @@
 // Define Liveblocks types for your application
 
 import { LiveList, LiveMap, LiveObject } from "@liveblocks/core";
-import { Layer } from "./types/canvas";
+import { Colour, Layer } from "./types/canvas";
 
 // https://liveblocks.io/docs/api-reference/liveblocks-react#Typing-your-data
 declare global {
@@ -11,6 +11,8 @@ declare global {
       // Example, real-time cursor coordinates
       cursor: { x: number; y: number } | null;
       selection: string[] | null;
+      pencilDraft: [number, number, number][] | null;
+      penColor: Colour | null;
     };
 
     // The Storage tree for the room, for useMutation, useStorage, etc.
