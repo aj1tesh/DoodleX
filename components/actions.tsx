@@ -6,7 +6,6 @@ import {
     DropdownMenuTrigger,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Link2, Pencil, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import { Overlay } from "./overlay";
 import { formatDistanceToNow } from "date-fns";
@@ -13,6 +12,7 @@ import { useApiMutation } from "@/hooks/use-api-mutation";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 interface BoardCardProps {
     id: string;
     title: string;
@@ -27,6 +27,7 @@ interface BoardCardProps {
 export const BoardCard = ({ id, title, imageUrl, authorId, authorName, createdAt, orgId, isFavorite }: BoardCardProps) => {
     
     const { userId } = useAuth();
+    const router = useRouter();
     const authorLabel = userId === authorId ? "You" : authorName;
     const createdAtLabel = formatDistanceToNow(createdAt, { addSuffix: true });
 
@@ -44,8 +45,18 @@ export const BoardCard = ({ id, title, imageUrl, authorId, authorName, createdAt
     }
 
     return (
-        <Link href={`/board/${id}`}>
-            <div className="group aspect-[100/127] border rounded-lg flex flex-col justify-between overflow-hidden">
+        <div
+            role="link"
+            tabIndex={0}
+            onClick={() => router.push(`/board/${id}`)}
+            onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push(`/board/${id}`);
+                }
+            }}
+            className="group aspect-[100/127] border rounded-lg flex flex-col justify-between overflow-hidden cursor-pointer"
+        >
                 <div className="relative flex-1 bg-amber-50">
                     <Image
                         src={imageUrl}
@@ -54,15 +65,22 @@ export const BoardCard = ({ id, title, imageUrl, authorId, authorName, createdAt
                         className="object-fit"
                     />
                     <Overlay />
-                    <Actions 
-                        id={id}
-                        title={title}
-                        side="right"
+                    {/* Stop bubbling so card onClick doesn't navigate; never preventDefault on the trigger — Radix needs native pointer/click behavior */}
+                    <div
+                        className="absolute top-2 right-2 z-20"
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
                     >
-                        <button className="w-full h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground rounded-md p-2">
-                            <MoreHorizontalIcon className="size-4 text-muted-foreground opacity-75 group-hover:opacity-100 transition" />
-                        </button>
-                    </Actions>
+                        <Actions id={id} title={title} side="right">
+                            <button
+                                type="button"
+                                className="rounded-md p-2 hover:bg-accent hover:text-accent-foreground"
+                                aria-label="Board actions"
+                            >
+                                <MoreHorizontalIcon className="size-4 text-muted-foreground opacity-75 group-hover:opacity-100 transition" />
+                            </button>
+                        </Actions>
+                    </div>
                 </div>
                 <Footer
                     isFavorite={isFavorite}
@@ -72,8 +90,7 @@ export const BoardCard = ({ id, title, imageUrl, authorId, authorName, createdAt
                     onClick={toggleFavorite}
                     disabled={pendingFavorite || pendingUnfavorite}
                 />
-            </div>
-        </Link>
+        </div>
     )
 }
 

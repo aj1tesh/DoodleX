@@ -4,8 +4,8 @@ export const Loading = () => {
     return (
         <div className="h-full w-full flex flex-col items-center justify-center">
             <Image
-                src="/logo.png"
-                alt="logo"
+                src="/logo1.png"
+                alt="DoodleX logo"
                 width={120}
                 height={120}
                 priority
