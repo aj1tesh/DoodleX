@@ -1,22 +1,22 @@
 "use client";
 
 import { memo } from "react";
-import { Colour, Camera } from "@/types/canvas";
+import { Camera, Layer, LayerType } from "@/types/canvas";
 import { useMutation } from "@liveblocks/react/suspense";
 import { useSelectionBounds } from "@/hooks/use-selection-bounds";
-import { ColorPicker } from "./color-picker";
 import { useDeleteLayers } from "@/hooks/use-delete-layers";
 import { Hint } from "@/components/hint";
 import { Button } from "@/components/ui/button";
-import { BringToFront, SendToBack, Trash2 } from "lucide-react";
+import { BringToFront, Copy, SendToBack, Trash2 } from "lucide-react";
+import { nanoid } from "nanoid";
+import { LiveObject } from "@liveblocks/core";
 
 interface SelectionToolsProps {
     camera: Camera;
-    setLastUsedColor: (color: Colour) => void;
 }
 
 export const SelectionTools = memo(
-    ({ camera, setLastUsedColor }: SelectionToolsProps) => {
+    ({ camera }: SelectionToolsProps) => {
 
     /** Paint order: index 0 = back, last index = front. */
     const sendToBack = useMutation(({ storage, self }) => {
@@ -51,17 +51,39 @@ export const SelectionTools = memo(
         }
     }, []);
 
-    const setFill = useMutation(
-        ({ storage, self }, fill: Colour) => {
-            setLastUsedColor(fill);
-            const liveLayers = storage.get("layers");
+    const copySelected = useMutation(({ storage, self, setMyPresence }) => {
+        const selection = self.presence.selection ?? [];
+        if (selection.length === 0) return;
 
-            for (const id of self.presence.selection ?? []) {
-                liveLayers.get(id)?.set("fill", fill);
-            }
-        },
-        [setLastUsedColor],
-    );
+        const liveLayers = storage.get("layers");
+        const liveLayerIds = storage.get("layerIds");
+
+        // Snapshot is the safest way to clone LiveObjects.
+        const snapshot = liveLayers.toJSON() as Record<string, Layer>;
+        const newIds: string[] = [];
+
+        for (const id of selection) {
+            const layer = snapshot[id];
+            if (!layer) continue;
+
+            const nextId = nanoid();
+            newIds.push(nextId);
+
+            liveLayerIds.push(nextId);
+            liveLayers.set(
+                nextId,
+                new LiveObject({
+                    ...layer,
+                    x: layer.x + 12,
+                    y: layer.y + 12,
+                }) as LiveObject<Layer>,
+            );
+        }
+
+        if (newIds.length > 0) {
+            setMyPresence({ selection: newIds }, { addToHistory: true });
+        }
+    }, []);
 
     const deleteLayers = useDeleteLayers();
 
@@ -73,31 +95,29 @@ export const SelectionTools = memo(
     const y = selectionBounds.y + camera.position.y;
 
     return (
-        <div className="absolute p-3 rounded-xl bg-white shadow-sm border flex select-none" 
+        <div className="absolute p-2 rounded-xl bg-white shadow-sm border flex items-center gap-1 select-none" 
         style={{ transform: `translate(
         calc(${x}px - 50%), calc(${y - 16}px - 100%))`}}>
-            <ColorPicker onChange={setFill}/>
-
-            <div className="flex flex-col gap-y-0.5">
-                <Hint label="Bring to Front">
-                    <Button variant="board" size="icon" onClick={() => bringToFront()}>
-                        <BringToFront />
-                    </Button>
-                </Hint>
-                <Hint label="Send to Back" side="bottom">
-                    <Button variant="board" size="icon" onClick={() => sendToBack()}>
-                        <SendToBack />
-                    </Button>
-                </Hint>
-            </div>
-
-            <div className="flex items-center pl-2 ml-2 border-l border-neutral-200">
-                <Hint label="Delete">
-                    <Button variant="board" size="icon" onClick={deleteLayers}>
-                        <Trash2 className="w-4 h-4" />
-                    </Button>
-                </Hint>
-            </div>
+            <Hint label="Copy">
+                <Button variant="board" size="icon" onClick={() => copySelected()}>
+                    <Copy className="w-4 h-4" />
+                </Button>
+            </Hint>
+            <Hint label="Bring to Front">
+                <Button variant="board" size="icon" onClick={() => bringToFront()}>
+                    <BringToFront className="w-4 h-4" />
+                </Button>
+            </Hint>
+            <Hint label="Send to Back">
+                <Button variant="board" size="icon" onClick={() => sendToBack()}>
+                    <SendToBack className="w-4 h-4" />
+                </Button>
+            </Hint>
+            <Hint label="Delete">
+                <Button variant="board" size="icon" onClick={deleteLayers}>
+                    <Trash2 className="w-4 h-4" />
+                </Button>
+            </Hint>
         </div>
     )
 });

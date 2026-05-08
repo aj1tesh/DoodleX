@@ -58,6 +58,8 @@ export type TextLayer = {
     width: number;
     fill: Colour;
     value?: string;
+    fontSize?: number;
+    fontFamily?: string;
 }
 
 export type NoteLayer = {
@@ -68,6 +70,8 @@ export type NoteLayer = {
     width: number;
     fill: Colour;
     value?: string;
+    fontSize?: number;
+    fontFamily?: string;
 }
 
 export type Point = {

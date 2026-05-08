@@ -19,6 +19,7 @@ import { SelectionBox } from "./selection-box";
 import { SelectionTools } from "./selection-tools";
 import { Path } from "./path";
 import { useDisableBounce } from "@/hooks/use-disable-bounce";
+import { Formatter } from "./formatter";
 
 const MAX_LAYERS = 100;
 interface CanvasProps {
@@ -34,7 +35,21 @@ export const Canvas = ({ boardId }: CanvasProps) => {
     const [canvasState, setCanvasState] = useState<CanvasState>({ mode: CanvasMode.None });
 
     const [ camera, setCamera ] = useState<Camera>({ position: { x: 0, y: 0 } });
-    const [lastUsedColor, setLastUsedColor] = useState<Colour>({ r: 0, g: 0, b: 0 });
+    const DEFAULT_COLOR: Colour = { r: 255, g: 255, b: 255 };
+    const [lastUsedColors, setLastUsedColors] = useState<Record<LayerType, Colour>>({
+        [LayerType.Rectangle]: DEFAULT_COLOR,
+        [LayerType.Ellipse]: DEFAULT_COLOR,
+        [LayerType.Path]: DEFAULT_COLOR,
+        [LayerType.Text]: DEFAULT_COLOR,
+        [LayerType.Note]: DEFAULT_COLOR,
+    });
+
+    const setLastUsedColorForType = useCallback((layerType: LayerType, color: Colour) => {
+        setLastUsedColors((prev) => ({
+            ...prev,
+            [layerType]: color,
+        }));
+    }, []);
 
     useDisableBounce();
 
@@ -58,13 +73,13 @@ export const Canvas = ({ boardId }: CanvasProps) => {
                 y: position.y,
                 width: 100,
                 height: 100,
-                fill: lastUsedColor,
+                fill: lastUsedColors[layerType] ?? DEFAULT_COLOR,
             })
             liveLayerIds.push(layerId);
             liveLayers.set(layerId, layer as LiveObject<Layer>);
             setMyPresence({ selection: [layerId] }, { addToHistory: true });
             setCanvasState({ mode: CanvasMode.None });
-        }, [lastUsedColor]);
+        }, [DEFAULT_COLOR, lastUsedColors]);
 
         const TranslateSelectedLayers = useMutation(({ storage, self }, point: Point) => {
             if (canvasState.mode !== CanvasMode.Translating) return;
@@ -141,7 +156,7 @@ export const Canvas = ({ boardId }: CanvasProps) => {
                 pencilDraft[0][1] === point.y ?
                 pencilDraft : [...pencilDraft, [point.x, point.y, e.pressure]],
             }, { addToHistory: false });
-        }, [canvasState.mode, lastUsedColor]);
+        }, [canvasState.mode]);
 
         const clearBoard = useMutation(({ storage, setMyPresence }) => {
             const liveLayers = storage.get("layers");
@@ -164,21 +179,21 @@ export const Canvas = ({ boardId }: CanvasProps) => {
                 return;
             }
             const id = nanoid();
-            liveLayers.set(id, new LiveObject(penPointsToPathLayer(pencilDraft, lastUsedColor)));
+            liveLayers.set(id, new LiveObject(penPointsToPathLayer(pencilDraft, lastUsedColors[LayerType.Path] ?? DEFAULT_COLOR)));
 
             const liveLayerIds = storage.get("layerIds");
             liveLayerIds.push(id);
 
             setMyPresence({ pencilDraft: null });
             setCanvasState({ mode: CanvasMode.Pencil });
-        }, [lastUsedColor]);
+        }, [DEFAULT_COLOR, lastUsedColors]);
 
         const startDrawing = useMutation(({ setMyPresence }, point: Point, pressure: number) => {
             setMyPresence({
                 pencilDraft: [[point.x, point.y, pressure]],
-                penColor: lastUsedColor,
+                penColor: lastUsedColors[LayerType.Path] ?? DEFAULT_COLOR,
             })
-        }, [lastUsedColor]);
+        }, [DEFAULT_COLOR, lastUsedColors]);
 
         const resizeSelectedLayer = useMutation(({ storage, self }, point: Point) => {
             if (canvasState.mode !== CanvasMode.Resizing) return;
@@ -326,11 +341,11 @@ export const Canvas = ({ boardId }: CanvasProps) => {
                 canUndo={canUndo}
                 canRedo={canRedo}
             />
+            <Formatter camera={camera} setLastUsedColorForType={setLastUsedColorForType} />
             <SelectionTools 
                 camera = {camera}
-                setLastUsedColor={setLastUsedColor}
                 />
-            <svg className="h-[100vh] w-[100vw]"
+            <svg className="h-screen w-screen"
                 onWheel={onWheel}
                 onPointerMove={onPointerMove}
                 onPointerLeave={onPointerLeave}
@@ -368,7 +383,7 @@ export const Canvas = ({ boardId }: CanvasProps) => {
                             x={0}
                             y={0}
                             points={pencilDraft}
-                            fill={colourToCSS(lastUsedColor)}
+                            fill={colourToCSS(lastUsedColors[LayerType.Path] ?? DEFAULT_COLOR)}
                             onPointerDown={() => {}}
                         />
                     )}
