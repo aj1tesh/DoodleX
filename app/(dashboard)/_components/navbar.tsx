@@ -39,9 +39,11 @@ export const Navbar = () => {
                 }}
             />
             </div>
-            {organization && 
-                <InviteButton />
-            }
+            {organization && (
+                <div className="-translate-x-5 shrink-0">
+                    <InviteButton />
+                </div>
+            )}
             <UserButton />
         </div>
     )

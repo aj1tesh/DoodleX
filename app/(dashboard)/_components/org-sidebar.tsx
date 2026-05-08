@@ -23,8 +23,8 @@ export const OrgSidebar = () => {
     return (
         <div className="hidden lg:flex flex-col space-y-6 w-[206px] pl-5 pr-5 pt-5">
             <Link href="/">
-                <div className="flex items ceter gap-x-2">
-                    <Image src="/logo.svg" alt="Logo" width={60} height={60} priority />
+                <div className="flex items-center justify-center gap-x-2">
+                    <Image src="/logo1.png" alt="Logo" width={50} height={50} priority />
                     <span className={cn(
                         "text-2xl font-semibold", 
                         font.className
