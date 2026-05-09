@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PencilIcon, RedoIcon, TrashIcon, TypeIcon, UndoIcon, MousePointer2Icon, SquareIcon, CircleIcon, StickyNoteIcon } from "lucide-react";
 import { ToolButton } from "./tool-button";
+import { BoardSummarizer } from "./board-summarizer";
 import { CanvasMode, CanvasState, LayerType } from "@/types/canvas";
 import {
     AlertDialog,
@@ -118,6 +119,9 @@ export const Toolbar = ({ canvasState, setCanvasState, undo, redo, clearBoard, c
                         isDisabled={false}
                     />
                 </div>
+                <div className="bg-white rounded-md p-1.5 flex flex-col gap-y-1 items-center shadow-md">
+                    <BoardSummarizer />
+                </div>
             </div>
             <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
                 <AlertDialogContent>
@@ -144,6 +148,6 @@ export const Toolbar = ({ canvasState, setCanvasState, undo, redo, clearBoard, c
 
 export const ToolbarSkeleton = () => {
     return (
-        <div className="absolute rounded-md top-[50%] -translate-y-[50%] left-2 flex flex-col gap-y-4 bg-white h-[360px] w-[52px] shadow-md" />
+        <div className="absolute rounded-md top-[50%] -translate-y-[50%] left-2 flex flex-col gap-y-4 bg-white h-[420px] w-[52px] shadow-md" />
     );
 };
