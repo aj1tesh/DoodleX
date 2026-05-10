@@ -12,6 +12,7 @@ import { Hint } from "@/components/hint";
 import { useRenameModal } from "@/store/use-rename-modal";
 import { Actions } from "@/components/actions";
 import { Menu } from "lucide-react";
+import { useCanManageBoard } from "@/hooks/use-can-manage-board";
 
 interface InfoProps {
     boardId: Id<"boards">;
@@ -34,6 +35,7 @@ export const Info = ({ boardId }: InfoProps) => {
     const { onOpen } = useRenameModal();
 
     const data = useQuery(api.board.get, { id: boardId as Id<"boards"> });
+    const canManageBoard = useCanManageBoard(data ?? undefined);
 
     if (!data) return <InfoSkeleton />;
 
@@ -51,9 +53,13 @@ export const Info = ({ boardId }: InfoProps) => {
                 </Button>
             </Hint>
             <TabSeparator />
-            <Hint label="Rename Board" align="center" sideOffset={10} alignOffset={10}>
-                <Button variant="board" className=" rounded-md px-2 text-md font-semibold" 
-                onClick={() => onOpen(boardId,data.title)}>
+            <Hint label={canManageBoard ? "Rename Board" : "Board title"} align="center" sideOffset={10} alignOffset={10}>
+                <Button variant="board" className=" rounded-md px-2 text-md font-semibold"
+                disabled={!canManageBoard}
+                onClick={() => {
+                    if (!canManageBoard) return;
+                    onOpen(boardId, data.title);
+                }}>
                     {data.title}
                 </Button>
             </Hint>
@@ -65,6 +71,7 @@ export const Info = ({ boardId }: InfoProps) => {
                         title={data.title}
                         side="bottom"
                         sideOffset={10}
+                        allowRenameDelete={canManageBoard}
                     >
                         <Button size="icon" variant="board">
                             <Menu />

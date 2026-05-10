@@ -342,7 +342,7 @@ export const Canvas = ({ boardId }: CanvasProps) => {
                 canUndo={canUndo}
                 canRedo={canRedo}
             />
-            <Formatter camera={camera} setLastUsedColorForType={setLastUsedColorForType} />
+            <Formatter camera={camera} canvasState={canvasState} setLastUsedColorForType={setLastUsedColorForType} />
             <SelectionTools 
                 camera = {camera}
                 />

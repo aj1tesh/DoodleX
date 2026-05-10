@@ -2,7 +2,7 @@
 
 import { memo, useMemo } from "react";
 import { useMutation, useSelf, useStorage } from "@liveblocks/react/suspense";
-import { Camera, Colour, Layer, LayerType, NoteLayer, TextLayer } from "@/types/canvas";
+import { Camera, CanvasMode, CanvasState, Colour, Layer, LayerType, NoteLayer, TextLayer } from "@/types/canvas";
 import { ColorPicker } from "./color-picker";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
@@ -18,10 +18,11 @@ const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(ma
 
 interface FormatterProps {
   camera: Camera;
+  canvasState: CanvasState;
   setLastUsedColorForType: (layerType: LayerType, color: Colour) => void;
 }
 
-export const Formatter = memo(({ camera, setLastUsedColorForType }: FormatterProps) => {
+export const Formatter = memo(({ camera, canvasState, setLastUsedColorForType }: FormatterProps) => {
   const selection = useSelf((me) => me.presence.selection ?? []);
   const layers = useStorage((root) => root.layers);
 
@@ -91,13 +92,26 @@ export const Formatter = memo(({ camera, setLastUsedColorForType }: FormatterPro
 
   void camera;
 
+  const isPencilMode = canvasState.mode === CanvasMode.Pencil;
+  const colorPickerInteractive = hasSelection || isPencilMode;
+
+  const onColorPicked = (color: Colour) => {
+    if (hasSelection) {
+      setFill(color);
+      return;
+    }
+    if (isPencilMode) {
+      setLastUsedColorForType(LayerType.Path, color);
+    }
+  };
+
   return (
     <div
       className="absolute top-3 left-1/2 -translate-x-1/2 bg-white border shadow-sm rounded-xl px-3 py-2 flex items-center gap-2 select-none"
       style={{ zIndex: 50 }}
     >
-      <div className={!hasSelection ? "opacity-50 pointer-events-none" : undefined}>
-        <ColorPicker onChange={setFill} />
+      <div className={!colorPickerInteractive ? "opacity-50 pointer-events-none" : undefined}>
+        <ColorPicker onChange={onColorPicked} />
       </div>
 
       <div className={"flex items-center gap-2" + (!isTextLikeSelected ? " opacity-50" : "")}>

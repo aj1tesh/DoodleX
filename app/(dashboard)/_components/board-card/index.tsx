@@ -13,6 +13,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useCanManageBoard } from "@/hooks/use-can-manage-board";
 interface BoardCardProps {
     id: string;
     title: string;
@@ -27,6 +28,7 @@ interface BoardCardProps {
 export const BoardCard = ({ id, title, imageUrl, authorId, authorName, createdAt, orgId, isFavorite }: BoardCardProps) => {
     
     const { userId } = useAuth();
+    const canManageBoard = useCanManageBoard({ authorId, orgId });
     const router = useRouter();
     const authorLabel = userId === authorId ? "You" : authorName;
     const createdAtLabel = formatDistanceToNow(createdAt, { addSuffix: true });
@@ -71,7 +73,7 @@ export const BoardCard = ({ id, title, imageUrl, authorId, authorName, createdAt
                         onPointerDown={(e) => e.stopPropagation()}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <Actions id={id} title={title} side="right">
+                        <Actions id={id} title={title} side="right" allowRenameDelete={canManageBoard}>
                             <button
                                 type="button"
                                 className="rounded-md p-2 hover:bg-accent hover:text-accent-foreground"

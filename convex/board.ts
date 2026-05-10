@@ -1,5 +1,37 @@
 import { v } from "convex/values";
+import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
+
+const ADMIN_ROLES = new Set(["org:admin", "admin"]);
+
+// Non-author org admins are authorized via JWT claims on the Convex identity.
+// Add these to your Clerk JWT template used for Convex (see Clerk dashboard → JWT templates):
+//   "org_id": "{{org.id}}"
+//   "org_role": "{{org.role}}"
+
+function orgClaimsFromIdentity(identity: Record<string, unknown>) {
+    return {
+        orgId: (identity.org_id ?? identity.orgId) as string | undefined,
+        orgRole: (identity.org_role ?? identity.orgRole) as string | undefined,
+    };
+}
+
+function canManageBoard(
+    identity: Record<string, unknown> & { subject: string },
+    board: Doc<"boards">,
+): boolean {
+    if (board.authorId === identity.subject) return true;
+    const { orgId, orgRole } = orgClaimsFromIdentity(identity);
+    if (
+        orgId != null &&
+        orgRole != null &&
+        orgId === board.orgId &&
+        ADMIN_ROLES.has(orgRole)
+    ) {
+        return true;
+    }
+    return false;
+}
 
 const images = [
     "/placeholders/1.svg",
@@ -49,6 +81,15 @@ export const remove = mutation({
             throw new Error("Unauthorized");
         }
 
+        const board = await ctx.db.get(args.id);
+        if (!board) {
+            throw new Error("Board not found");
+        }
+
+        if (!canManageBoard(identity as Record<string, unknown> & { subject: string }, board)) {
+            throw new Error("Forbidden");
+        }
+
         const userId = identity.subject;
 
         const existingFavorite = await ctx.db
@@ -87,6 +128,15 @@ export const update = mutation({
 
         if(title.length > 60){
             throw new Error("Title must be less than 60 characters");
+        }
+
+        const existing = await ctx.db.get(args.id);
+        if (!existing) {
+            throw new Error("Board not found");
+        }
+
+        if (!canManageBoard(identity as Record<string, unknown> & { subject: string }, existing)) {
+            throw new Error("Forbidden");
         }
 
         const board = await ctx.db.patch(args.id, {
