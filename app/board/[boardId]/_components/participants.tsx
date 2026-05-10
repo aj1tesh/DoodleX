@@ -14,24 +14,30 @@ export const Participants = () => {
     return (
         <div className="absolute top-2 right-2 bg-white rounded-md p-3 h-12 flex items-center shadow-md">
             <div className="flex gap-x-2">
-                {users.slice(0, MAX_USERS).map(({ connectionId, info }) => (
-                    <UserAvatar
-                        borderColor={getColor(connectionId)}
-                        key={connectionId}
-                        src={info?.picture}
-                        name={info?.name}
-                        fallback={info?.name?.charAt(0) || "?"}
-                    />
-                ))}
+                {users.slice(0, MAX_USERS).map(({ connectionId, info }) => {
+                    const displayName = info?.name?.trim() || "Anonymous";
+                    return (
+                        <UserAvatar
+                            borderColor={getColor(connectionId)}
+                            key={connectionId}
+                            src={info?.picture}
+                            name={displayName}
+                            fallback={displayName.charAt(0).toUpperCase()}
+                        />
+                    );
+                })}
 
-                {currentUser && (
-                    <UserAvatar
-                        borderColor={getColor(currentUser.connectionId)}
-                        src={currentUser.info?.picture}
-                        name={`${currentUser.info?.name} (You)`}
-                        fallback={currentUser.info?.name?.charAt(0) || "?"}
-                    />
-                )}
+                {currentUser && (() => {
+                    const selfName = currentUser.info?.name?.trim() || "You";
+                    return (
+                        <UserAvatar
+                            borderColor={getColor(currentUser.connectionId)}
+                            src={currentUser.info?.picture}
+                            name={`${selfName} (You)`}
+                            fallback={selfName.charAt(0).toUpperCase()}
+                        />
+                    );
+                })()}
 
                 {hasMoreUsers && (
                     <UserAvatar

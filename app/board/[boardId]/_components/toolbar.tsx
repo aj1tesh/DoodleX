@@ -24,9 +24,10 @@ interface ToolbarProps {
     clearBoard: () => void;
     canUndo: boolean;
     canRedo: boolean;
+    canClearBoard: boolean;
 }
 
-export const Toolbar = ({ canvasState, setCanvasState, undo, redo, clearBoard, canUndo, canRedo }: ToolbarProps) => {
+export const Toolbar = ({ canvasState, setCanvasState, undo, redo, clearBoard, canUndo, canRedo, canClearBoard }: ToolbarProps) => {
     const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
     return (
@@ -113,10 +114,13 @@ export const Toolbar = ({ canvasState, setCanvasState, undo, redo, clearBoard, c
                     />
                     <ToolButton
                         icon={TrashIcon}
-                        label="Clear Board"
-                        onClick={() => setClearDialogOpen(true)}
+                        label={canClearBoard ? "Clear Board" : "Only admins or the board owner can clear"}
+                        onClick={() => {
+                            if (!canClearBoard) return;
+                            setClearDialogOpen(true);
+                        }}
                         isActive={false}
-                        isDisabled={false}
+                        isDisabled={!canClearBoard}
                     />
                 </div>
                 <div className="bg-white rounded-md p-1.5 flex flex-col gap-y-1 items-center shadow-md">

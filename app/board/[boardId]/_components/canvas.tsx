@@ -20,6 +20,9 @@ import { SelectionTools } from "./selection-tools";
 import { Path } from "./path";
 import { useDisableBounce } from "@/hooks/use-disable-bounce";
 import { Formatter } from "./formatter";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useCanManageBoard } from "@/hooks/use-can-manage-board";
 
 const MAX_LAYERS = 100;
 interface CanvasProps {
@@ -29,6 +32,9 @@ interface CanvasProps {
 export const Canvas = ({ boardId }: CanvasProps) => {
 
     const layerIds = useStorage((root) => root.layerIds);
+
+    const boardData = useQuery(api.board.get, { id: boardId as Id<"boards"> });
+    const canManageBoard = useCanManageBoard(boardData ?? undefined);
 
     const pencilDraft = useSelf((me) => me.presence.pencilDraft);
     
@@ -187,6 +193,8 @@ export const Canvas = ({ boardId }: CanvasProps) => {
         }, [canvasState.mode]);
 
         const clearBoard = useMutation(({ storage, setMyPresence }) => {
+            if (!canManageBoard) return;
+
             const liveLayers = storage.get("layers");
             const liveLayerIds = storage.get("layerIds");
 
@@ -196,7 +204,7 @@ export const Canvas = ({ boardId }: CanvasProps) => {
             }
             liveLayerIds.clear();
             setMyPresence({ selection: [], pencilDraft: null }, { addToHistory: true });
-        }, []);
+        }, [canManageBoard]);
 
         const insertPath = useMutation(({ storage, self, setMyPresence }) => {
             const liveLayers = storage.get("layers");
@@ -370,6 +378,7 @@ export const Canvas = ({ boardId }: CanvasProps) => {
                 clearBoard={clearBoard}
                 canUndo={canUndo}
                 canRedo={canRedo}
+                canClearBoard={canManageBoard}
             />
             <Formatter camera={camera} canvasState={canvasState} setLastUsedColorForType={setLastUsedColorForType} />
             <SelectionTools 

@@ -34,8 +34,15 @@ export async function POST(request: Request) {
     return new Response("Forbidden", { status: 403 });
   }
 
+  const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
+  const displayName =
+    fullName ||
+    user.username ||
+    user.emailAddresses?.[0]?.emailAddress ||
+    "Anonymous";
+
   const userInfo = {
-    name: user.firstName + " " + user.lastName,
+    name: displayName,
     picture: user.imageUrl,
   };
 
