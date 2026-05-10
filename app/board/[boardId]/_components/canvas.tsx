@@ -5,7 +5,7 @@ import { Participants } from "./participants";
 import { Toolbar } from "./toolbar";
 import { Id } from "@/convex/_generated/dataModel";
 import { CanvasMode, CanvasState, Layer, LayerType } from "@/types/canvas";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useHistory, useCanUndo, useCanRedo, useMutation, useStorage, useOthersMapped, useSelf } from "@liveblocks/react/suspense";
 import { CursorPresence } from "./cursor-presence";
 import { Camera, Colour, Point, Side, XYWH } from "@/types/canvas";
@@ -53,6 +53,32 @@ export const Canvas = ({ boardId }: CanvasProps) => {
 
     useDisableBounce();
 
+    const dedupeLayerIds = useMutation(({ storage }) => {
+        const liveLayerIds = storage.get("layerIds");
+        const seen = new Set<string>();
+        const dupIndices: number[] = [];
+
+        for (let i = 0; i < liveLayerIds.length; i++) {
+            const id = liveLayerIds.get(i);
+            if (id === undefined) continue;
+            if (seen.has(id)) dupIndices.push(i);
+            else seen.add(id);
+        }
+
+        if (dupIndices.length === 0) return;
+
+        for (let i = dupIndices.length - 1; i >= 0; i--) {
+            liveLayerIds.delete(dupIndices[i]);
+        }
+    }, []);
+
+    const didDedupeRef = useRef(false);
+    useEffect(() => {
+        if (didDedupeRef.current) return;
+        didDedupeRef.current = true;
+        dedupeLayerIds();
+    }, [dedupeLayerIds]);
+
     const history = useHistory();
     const canUndo = useCanUndo();
     const canRedo = useCanRedo();
@@ -81,13 +107,16 @@ export const Canvas = ({ boardId }: CanvasProps) => {
             setCanvasState({ mode: CanvasMode.None });
         }, [DEFAULT_COLOR, lastUsedColors]);
 
+        const lastTranslatePointRef = useRef<Point | null>(null);
+
         const TranslateSelectedLayers = useMutation(({ storage, self }, point: Point) => {
             if (canvasState.mode !== CanvasMode.Translating) return;
+            const last = lastTranslatePointRef.current;
+            if (!last) return;
 
-            const offset = {
-                x: point.x - canvasState.current.x,
-                y: point.y - canvasState.current.y,
-            };
+            const dx = point.x - last.x;
+            const dy = point.y - last.y;
+            if (dx === 0 && dy === 0) return;
 
             const liveLayers = storage.get("layers");
 
@@ -96,15 +125,14 @@ export const Canvas = ({ boardId }: CanvasProps) => {
 
                 if(layer){
                     layer.update({
-                        x: layer.get("x") + offset.x,
-                        y: layer.get("y") + offset.y,
+                        x: layer.get("x") + dx,
+                        y: layer.get("y") + dy,
                     });
                 }
             }
 
-            setCanvasState({ mode: CanvasMode.Translating, current: point });
-
-        }, [canvasState]);
+            lastTranslatePointRef.current = point;
+        }, [canvasState.mode]);
 
         const unselectLayers = useMutation(({ self, setMyPresence }) => {
             if(self.presence.selection?.length && self.presence.selection.length > 0){
@@ -298,6 +326,7 @@ export const Canvas = ({ boardId }: CanvasProps) => {
         e.stopPropagation();
 
         const point = pointertoCanvas(e, camera);
+        lastTranslatePointRef.current = point;
 
         if(!self.presence.selection?.includes(layerId)){
             setMyPresence({ selection: [layerId] }, { addToHistory: true });
@@ -362,7 +391,7 @@ export const Canvas = ({ boardId }: CanvasProps) => {
                         <LayerPreview
                             key={layerId}
                             id={layerId}
-                            onLayerPointerDown={(e) => onLayerPointerDown(e, layerId)}
+                            onLayerPointerDown={onLayerPointerDown}
                             selectionColor={layerIdstoColor[layerId] ?? null}
                         />
                     ))}

@@ -24,14 +24,13 @@ export const SelectionTools = memo(
         const sel = new Set(self.presence.selection ?? []);
         if (sel.size === 0) return;
 
-        const arr = Array.from(liveLayerIds);
-        const selected = arr.filter((id) => sel.has(id));
-        const unselected = arr.filter((id) => !sel.has(id));
-        const newOrder = [...selected, ...unselected];
+        const selectedInOrder = Array.from(liveLayerIds).filter((id) => sel.has(id));
 
-        liveLayerIds.clear();
-        for (const id of newOrder) {
-            liveLayerIds.push(id);
+        for (let i = 0; i < selectedInOrder.length; i++) {
+            const idx = liveLayerIds.indexOf(selectedInOrder[i]);
+            if (idx !== -1 && idx !== i) {
+                liveLayerIds.move(idx, i);
+            }
         }
     }, []);
 
@@ -40,14 +39,14 @@ export const SelectionTools = memo(
         const sel = new Set(self.presence.selection ?? []);
         if (sel.size === 0) return;
 
-        const arr = Array.from(liveLayerIds);
-        const selected = arr.filter((id) => sel.has(id));
-        const unselected = arr.filter((id) => !sel.has(id));
-        const newOrder = [...unselected, ...selected];
+        const selectedInOrder = Array.from(liveLayerIds).filter((id) => sel.has(id));
 
-        liveLayerIds.clear();
-        for (const id of newOrder) {
-            liveLayerIds.push(id);
+        for (const id of selectedInOrder) {
+            const idx = liveLayerIds.indexOf(id);
+            const last = liveLayerIds.length - 1;
+            if (idx !== -1 && idx !== last) {
+                liveLayerIds.move(idx, last);
+            }
         }
     }, []);
 
